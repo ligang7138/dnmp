@@ -1,18 +1,15 @@
 nginx:
   image: nginx:latest
-  #image: nginx:alpine
   ports:
     - "80:80"
 #   - "443:443"
   links:
     - php72:fpm
-      #- php72:fpm
   volumes_from:
     - www
 php72:
- #build: ./php/php72/
-  image: php7.2-fpm
- #image: php:7.2-rc-fpm-alpine3.6
+  image: ligang7138/php7.2-fpm
+  #image: php:7.2-rc-fpm-alpine3.6
   expose:
     - "9000"
   volumes_from:
