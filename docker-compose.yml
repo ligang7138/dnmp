@@ -15,18 +15,18 @@ php72:
   volumes_from:
     - php-config  
   links:
-      # - mysql:mysql
+    - mysql:mysql
     - redis:redis
-      #mysql:
-      #  image: mariadb:latest
-      #  ports:
-      #    - "127.0.0.1:3306:3306"
-      #  volumes:
-      #    - ./conf/mysql/my.cnf:/etc/mysql/my.cnf:rw
-      #    - ./mysql/:/var/lib/mysql/:rw
-      #    - ./log/mysql/:/var/log/mysql/:rw
-      #  environment:
-      #    MYSQL_ROOT_PASSWORD: "123456"
+mysql:
+  image: mariadb:latest
+  ports:
+    - "127.0.0.1:3306:3306"
+  volumes:
+    - ./conf/mysql/my.cnf:/etc/mysql/my.cnf:rw
+    - ./mysql/:/var/lib/mysql/:rw
+    - ./log/mysql/:/var/log/mysql/:rw
+  environment:
+    MYSQL_ROOT_PASSWORD: "123456"
 redis:
   image: redis:latest
   ports:
@@ -44,7 +44,7 @@ php-config:
   image: busybox 
   volumes:
     - ./www/:/var/www/html/:rw
-    - ./conf/php/php.ini:/etc/php/7.0/fpm/php.ini:rw
+    - ./conf/php/php.ini:/usr/local/etc/php/php.ini:rw
     - ./conf/php/php-fpm.d/www.conf:/etc/php/7.0/fpm/conf.d/www.conf:rw
     - ./log/php-fpm/:/var/log/php-fpm/:rw
     - ./wkhtmltox/:/usr/local/wkhtmltox/:rw
