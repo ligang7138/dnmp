@@ -1,7 +1,7 @@
 #https://blog.csdn.net/skh2015java/article/details/80410348
 version: '2'
 services:
-  nginx:s
+  nginx:
     image: nginx:latest
     ports:
       - "80:80"
@@ -18,23 +18,23 @@ services:
       - "9000"
     volumes_from:
       - php-config  
-    links:
-      - mysql:mysql
-      - redis:redis
-  mysql:
-    image: mariadb:latest
-    ports:
-      - "127.0.0.1:3306:3306"
-    volumes:
-      - ./conf/mysql/my.cnf:/etc/mysql/my.cnf:rw
-      - ./mysql/:/var/lib/mysql/:rw
-      - ./log/mysql/:/var/log/mysql/:rw
-    environment:
-      MYSQL_ROOT_PASSWORD: "123456"
-  redis:
-    image: redis:latest
-    ports:
-      - "6379:6379"
+        #links:
+      #- mysql:mysql
+      # - redis:redis
+      #  mysql:
+      #image: mariadb:latest
+      #ports:
+      #- "127.0.0.1:3306:3306"
+      # volumes:
+      #- ./conf/mysql/my.cnf:/etc/mysql/my.cnf:rw
+      #- ./mysql/:/var/lib/mysql/:rw
+      #- ./log/mysql/:/var/log/mysql/:rw
+      #environment:
+      #MYSQL_ROOT_PASSWORD: "123456"
+      #redis:
+          #image: redis:latest
+          #ports:
+          #- "6379:6379"
   www:
     image: busybox
     volumes:
