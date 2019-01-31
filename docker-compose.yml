@@ -5,15 +5,18 @@ services:
     image: nginx:latest
     ports:
       - "80:80"
-  #   - "443:443"
+        #- "443:443"
     links:
-      - php72:fpm
+      - php:fpm
     volumes_from:
       - www
-  php72:
-    image: ligang7138/php7.2-fpm
+  php:
+    image: ligang7138/php7.3-fpm-alpine1
+    #image: ligang7138/php7.2-fpm
     #image: php:7.2-rc-fpm-alpine3.6
     #build: ./php/php72/
+    #ports:
+    # - "9000:9000"      
     expose:
       - "9000"
     volumes_from:
@@ -48,8 +51,7 @@ services:
     image: busybox 
     volumes:
       - ./www/:/var/www/html/:rw
-      - ./conf/php/php.ini:/usr/local/etc/php/php.ini:rw
-      - ./conf/php/php-fpm.d/www.conf:/etc/php/7.0/fpm/conf.d/www.conf:rw
+        # - ./conf/php/php.ini:/usr/local/etc/php/php.ini:rw
+        # - ./conf/php/php-fpm.d/www.conf:/etc/php/7.0/fpm/conf.d/www.conf:rw
       - ./log/php-fpm/:/var/log/php-fpm/:rw
-      - ./wkhtmltox/:/usr/local/wkhtmltox/:rw
     command: /bin/sh -c "while true; do echo 1 > /dev/null; sleep 1000; done;" 
