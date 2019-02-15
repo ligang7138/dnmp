@@ -1,6 +1,54 @@
 #https://blog.csdn.net/skh2015java/article/details/80410348
+<<<<<<< HEAD
 version: '2.2'
 services:
+=======
+version: "2"
+services:
+  filebeat_nginx:
+    image: prima/filebeat
+    volumes:
+      - ./filebeat/conf/filebeat.yml:/etc/filebeat/filebeat.yml:rw
+      - ./filebeat/conf/fields.yml:/etc/filebeat/fields.yml:rw
+    #  - ./log/:/var/log/:rw
+    links:
+      - elasticsearch:elastic
+    volumes_from:
+      - www
+    command: 
+      - /bin/bash
+      - -c
+      - |
+        filebeat -c /etc/filebeat/filebeat.yml -path.config /etc/filebeat -e -strict.perms=false 
+    #command: filebeat -c /etc/filebeat/filebeat.yml -path.config /etc/filebeat -e -strict.perms=false 
+    #command: chmod go-w /filebeat.yml && filebeat -e -c /filebeat.yml 
+  filebeat_php_fpm:
+    image: prima/filebeat
+    volumes:
+      - ./filebeat/conf/filebeat.yml:/etc/filebeat/filebeat.yml:rw
+      - ./filebeat/conf/fields.yml:/etc/filebeat/fields.yml:rw
+    #  - ./log/:/var/log/:rw
+    links:
+      - elasticsearch:elastic
+    volumes_from:
+      - php-config
+    command: 
+      - /bin/bash
+      - -c
+      - |
+        filebeat -c /etc/filebeat/filebeat.yml -path.config /etc/filebeat -e -strict.perms=false 
+  elasticsearch:
+    image: elasticsearch
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+  kibana:
+    image: kibana
+    ports:
+      - 5601:5601
+    depends_on:
+      - elasticsearch
+>>>>>>> 84c1b10d2257a6429b809da6235caac977a90736
   nginx:
     image: nginx:latest
     ports:
@@ -14,9 +62,12 @@ services:
     image: ligang7138/php7.3-fpm-alpine1
     #image: ligang7138/php7.2-fpm
     #image: php:7.2-rc-fpm-alpine3.6
+<<<<<<< HEAD
     #build: ./php/php72/
     ports:
       - "9000:9000"      
+=======
+>>>>>>> 84c1b10d2257a6429b809da6235caac977a90736
     expose:
       - "9000"
     volumes_from:
@@ -41,6 +92,11 @@ services:
   www:
     image: busybox
     volumes:
+<<<<<<< HEAD
+=======
+      - /Users/ligang/web/ant-design-pro/:/var/www/html/:rw
+      - ./www/:/var/www/html/:rw
+>>>>>>> 84c1b10d2257a6429b809da6235caac977a90736
       - ./conf/nginx/conf.d:/etc/nginx/conf.d/:rw
         #- ./conf/nginx/nginx.conf:/etc/nginx/nginx.conf:rw
         #- ./conf/nginx/mime.types:/etc/nginx/mime.types:rw
@@ -50,7 +106,13 @@ services:
     image: busybox 
     volumes:
       - ./www/:/var/www/html/:rw
+<<<<<<< HEAD
         # - ./conf/php/php.ini:/usr/local/etc/php/php.ini:rw
         # - ./conf/php/php-fpm.d/www.conf:/etc/php/7.0/fpm/conf.d/www.conf:rw
+=======
+      - /Users/ligang/web/ant-design-pro/:/var/www/html/:rw
+      - ./conf/php/php.ini:/usr/local/etc/php/php.ini:rw
+      - ./conf/php/php-fpm.d/www.conf:/etc/php/7.0/fpm/conf.d/www.conf:rw
+>>>>>>> 84c1b10d2257a6429b809da6235caac977a90736
       - ./log/php-fpm/:/var/log/php-fpm/:rw
     command: /bin/sh -c "while true; do echo 1 > /dev/null; sleep 1000; done;" 
