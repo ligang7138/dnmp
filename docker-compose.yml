@@ -1,5 +1,5 @@
 #https://blog.csdn.net/skh2015java/article/details/80410348
-version: '2'
+version: '2.2'
 services:
   nginx:
     image: nginx:latest
@@ -15,8 +15,8 @@ services:
     #image: ligang7138/php7.2-fpm
     #image: php:7.2-rc-fpm-alpine3.6
     #build: ./php/php72/
-    #ports:
-    # - "9000:9000"      
+    ports:
+      - "9000:9000"      
     expose:
       - "9000"
     volumes_from:
@@ -41,10 +41,9 @@ services:
   www:
     image: busybox
     volumes:
-      - ./www/:/var/www/html/:rw
       - ./conf/nginx/conf.d:/etc/nginx/conf.d/:rw
-      - ./conf/nginx/nginx.conf:/etc/nginx/nginx.conf:rw
-      - ./conf/nginx/mime.types:/etc/nginx/mime.types:rw
+        #- ./conf/nginx/nginx.conf:/etc/nginx/nginx.conf:rw
+        #- ./conf/nginx/mime.types:/etc/nginx/mime.types:rw
       - ./log/nginx/:/var/log/nginx/:rw
     command: /bin/sh -c "while true; do echo 1 > /dev/null; sleep 1000; done;"
   php-config:
