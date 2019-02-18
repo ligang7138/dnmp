@@ -1,99 +1,61 @@
-#https://blog.csdn.net/skh2015java/article/details/80410348
-version: '2.2'
+version: '3.7'
 services:
-  filebeat_nginx:
-    image: prima/filebeat
-    volumes:
-      - ./filebeat/conf/filebeat.yml:/etc/filebeat/filebeat.yml:rw
-      - ./filebeat/conf/fields.yml:/etc/filebeat/fields.yml:rw
-    #  - ./log/:/var/log/:rw
-    links:
-      - elasticsearch:elastic
-    volumes_from:
-      - www
-    command: 
-      - /bin/bash
-      - -c
-      - |
-        filebeat -c /etc/filebeat/filebeat.yml -path.config /etc/filebeat -e -strict.perms=false 
-    #command: filebeat -c /etc/filebeat/filebeat.yml -path.config /etc/filebeat -e -strict.perms=false 
-    #command: chmod go-w /filebeat.yml && filebeat -e -c /filebeat.yml 
-  filebeat_php_fpm:
-    image: prima/filebeat
-    volumes:
-      - ./filebeat/conf/filebeat.yml:/etc/filebeat/filebeat.yml:rw
-      - ./filebeat/conf/fields.yml:/etc/filebeat/fields.yml:rw
-    #  - ./log/:/var/log/:rw
-    links:
-      - elasticsearch:elastic
-    volumes_from:
-      - php-config
-    command: 
-      - /bin/bash
-      - -c
-      - |
-        filebeat -c /etc/filebeat/filebeat.yml -path.config /etc/filebeat -e -strict.perms=false 
-  elasticsearch:
-    image: elasticsearch
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-  kibana:
-    image: kibana
-    ports:
-      - 5601:5601
-    depends_on:
-      - elasticsearch
   nginx:
-    image: nginx:latest
+    image: openresty/openresty:alpine
+    # image: nginx:latest
+    container_name: nginx
     ports:
       - "80:80"
         #- "443:443"
-    links:
-      - php:fpm
-    volumes_from:
-      - www
+    expose:
+      - "80"
+    depends_on:
+      - redis
+      - php  
+   # deploy:
+   #   replicas: 2
+   #   update_config:
+   #     parallelism: 2
+   #     delay: 10s
+   #     order: start-first    
+   # external_links:
+   #   - php:fpm
+    volumes:
+      - ./conf/nginx/conf.d:/etc/nginx/conf.d/:rw
+      - ./conf/nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:rw
+      # - ./conf/nginx/nginx.conf:/etc/nginx/nginx.conf:rw
+        #- ./conf/nginx/mime.types:/etc/nginx/mime.types:rw
+      - ./log/nginx/:/var/log/nginx/:rw
   php:
     image: ligang7138/php7.3-fpm-alpine1
-    #image: ligang7138/php7.2-fpm
-    #image: php:7.2-rc-fpm-alpine3.6
     #build: ./php/php72/
+    container_name: php-7.3
     ports:
       - "9000:9000"      
     expose:
       - "9000"
-    volumes_from:
-      - php-config  
-        #links:
-      #- mysql:mysql
-      # - redis:redis
-      #  mysql:
-      #image: mariadb:latest
-      #ports:
-      #- "127.0.0.1:3306:3306"
-      # volumes:
-      #- ./conf/mysql/my.cnf:/etc/mysql/my.cnf:rw
-      #- ./mysql/:/var/lib/mysql/:rw
-      #- ./log/mysql/:/var/log/mysql/:rw
-      #environment:
-      #MYSQL_ROOT_PASSWORD: "123456"
-      #redis:
-          #image: redis:latest
-          #ports:
-          #- "6379:6379"
-  www:
-    image: busybox
-    volumes:
-      - ./conf/nginx/conf.d:/etc/nginx/conf.d/:rw
-        #- ./conf/nginx/nginx.conf:/etc/nginx/nginx.conf:rw
-        #- ./conf/nginx/mime.types:/etc/nginx/mime.types:rw
-      - ./log/nginx/:/var/log/nginx/:rw
-    command: /bin/sh -c "while true; do echo 1 > /dev/null; sleep 1000; done;"
-  php-config:
-    image: busybox 
     volumes:
       - ./www/:/var/www/html/:rw
-        # - ./conf/php/php.ini:/usr/local/etc/php/php.ini:rw
-        # - ./conf/php/php-fpm.d/www.conf:/etc/php/7.0/fpm/conf.d/www.conf:rw
+      # - ./conf/php/php.ini:/usr/local/etc/php/php.ini:rw
+      # - ./conf/php/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d/www.conf:rw
       - ./log/php-fpm/:/var/log/php-fpm/:rw
-    command: /bin/sh -c "while true; do echo 1 > /dev/null; sleep 1000; done;" 
+    #external_links:
+    depends_on:
+      - mysql
+      - redis
+  mysql:
+    image: mariadb:latest
+    container_name: mysql
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - ./conf/mysql/my.cnf:/etc/mysql/my.cnf:rw
+      - ./mysql/:/var/lib/mysql/:rw
+      - ./log/mysql/:/var/log/mysql/:rw
+    environment:
+      MYSQL_ROOT_PASSWORD: "123456"
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
