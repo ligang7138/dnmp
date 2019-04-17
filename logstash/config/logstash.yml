@@ -1,7 +1,7 @@
 http.host: "0.0.0.0"
 
-xpack.monitoring.elasticsearch.url: "http://elasticsearch:9200"
-xpack.monitoring.elasticsearch.username: elastic
+xpack.monitoring.elasticsearch.url: "http://172.25.0.2:9200"
+xpack.monitoring.elasticsearch.username: "elastic"
 xpack.monitoring.elasticsearch.password: "123456"
 
 # 通过x-pack 在kibana上管理pipe信息  
@@ -9,8 +9,10 @@ xpack.monitoring.elasticsearch.password: "123456"
 # * 至少要有配置一个管道
 
 # xpack.management.enabled: true
-# xpack.management.elasticsearch.url: "http://elasticsearch:9200/"
-# xpack.management.elasticsearch.username: elastic
+# xpack.management.elasticsearch.url: "http://172.25.0.2:9200/"
+# xpack.management.elasticsearch.username: "elastic"
 # xpack.management.elasticsearch.password: "123456"
 # xpack.management.logstash.poll_interval: 5s
-# xpack.management.pipeline.id: ["var.log.system", "main", "mysql.show"]
+# xpack.management.pipeline.id: ["var.log.system", "main", "mysql.show", "nginx.log"]
+# xpack.management.pipeline.id: ["mysql_show","nginx-log"]
+

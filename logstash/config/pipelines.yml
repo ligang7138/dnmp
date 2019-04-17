@@ -2,5 +2,13 @@
 # For more information on multiple pipelines, see the documentation:
 #   https://www.elastic.co/guide/en/logstash/current/multiple-pipelines.html
 
-- pipeline.id: mysql.slow
-  path.config: "/usr/share/logstash/pipeline/mysql.slow.conf"
+- pipeline.id: mysql_slow
+  path.config: /usr/share/logstash/pipeline/mysql_slow.conf
+
+- pipeline.id: nginx_log
+  path.config: /usr/share/logstash/pipeline/nginx_log.conf
+  pipeline.workers: 1
+
+- pipeline.id: shop_api
+  path.config: /usr/share/logstash/pipeline/shop_api.conf
+  pipeline.workers: 1
