@@ -1,0 +1,110 @@
+version: '3.7'
+services:
+  
+  elasticsearch:
+    build:
+      context: elasticsearch/
+    container_name: elasticsearch
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+      - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime:ro
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+      ELASTIC_PASSWORD: "123456"
+    networks:
+      web-php-net:
+        ipv4_address: 172.25.0.2
+    restart: always
+
+  logstash:
+    build:
+      context: logstash/
+    container_name: logstash
+    volumes:
+      - ./logstash/config:/usr/share/logstash/config:rw
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:rw
+      - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime:ro
+      - mysqllog:/xlogs/mysqllog:rw
+      - ./log/nginx/:/var/log/nginx/:rw
+    ports:
+      - "5000:5000"
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+    user: "root"
+    networks:
+      web-php-net:
+        ipv4_address: 172.25.0.3
+    depends_on:
+      - elasticsearch
+    restart: always
+
+  kibana:
+    build:
+      context: kibana/
+    container_name: kibana
+    volumes:
+      - ./kibana/config/:/usr/share/kibana/config:ro
+      - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime:ro
+    ports:
+      - "5601:5601"
+    networks:
+      web-php-net:
+        ipv4_address: 172.25.0.4
+    depends_on:
+      - elasticsearch
+    restart: always
+
+  metricbeat:
+    build:
+      context: metricbeat/
+    container_name: metricbeat
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc:/hostfs/proc:ro
+      - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+      - /:/hostfs:ro
+      - ./metricbeat/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro
+      - ./metricbeat/modules.d:/usr/share/metricbeat/modules.d:ro
+      -  /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime:ro
+    user: "root"
+    # network_mode: host
+    networks:
+      web-php-net:
+        ipv4_address: 172.25.0.15
+    depends_on:
+      - elasticsearch
+      - kibana
+      - logstash
+    command: -system.hostfs=/hostfs -e
+    restart: always
+
+# #设置内部网络        
+# networks:
+#   # lnmp-env:
+#   #   driver: bridge
+#   web-php-net:
+#     driver: bridge
+#     ipam:
+#       config:
+#        - subnet: 172.25.0.0/16
+#使用外部网络  docker network create --driver bridge --subnet 172.25.0.0/24 --gateway 172.25.0.1 web-php-net
+networks:
+  web-php-net:
+   external:
+      name: web-php-net     
+
+#volumes:
+    #db-data:
+volumes:
+  esdata:
+    driver: local
+  mysqldata:
+    driver: local
+  mysqllog:
+    driver: local
+  redisdata:
+    driver: local    

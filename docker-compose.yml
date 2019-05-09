@@ -12,9 +12,8 @@ services:
     expose:
       - "80"
     depends_on:
-      - redis
+      # - redis
       - php  
-      - kibana  
    # deploy:
    #   replicas: 2
    #   update_config:
@@ -26,7 +25,7 @@ services:
     restart: always
     networks:
       # - "lnmp-env"
-      elk:
+      web-php-net:
         ipv4_address: 172.25.0.5
     volumes:
       - ./www/:/var/www/html/:rw
@@ -55,15 +54,17 @@ services:
       #- ./conf/php/php.ini:/usr/local/etc/php/php.ini:rw
       # - ./conf/php/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d/www.conf:rw
       - ./log/php-fpm/:/var/log/php-fpm/:rw
+      - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime:ro
+      - /usr/local/bin/composer:/usr/local/bin/composer
     #external_links:
     depends_on:
       - mysql
-      - redis
+      # - redis
     restart: always
     networks:
       # - "lnmp-env"
-      elk:
-        ipv4_address: 172.25.0.8
+      web-php-net:
+        ipv4_address: 172.25.0.6
   mysql:
     # image: mysql 
     build:
@@ -81,8 +82,8 @@ services:
       - "3306:3306"
     networks:
       # - "lnmp-env"
-      elk:
-        ipv4_address: 172.25.0.6
+      web-php-net:
+        ipv4_address: 172.25.0.7
     environment:
       MYSQL_ROOT_PASSWORD: root
     restart: always  
@@ -95,105 +96,40 @@ services:
       - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime:ro
     restart: always
     ports:
-      - "6379:6379"    
+      - "6379:6379" 
+    networks:
+      # - "lnmp-env"
+      web-php-net:
+        ipv4_address: 172.25.0.8  
+
+
   # redis-cluster:
   #   image: redis:latest
   #   container_name: redis
   #   ports:
   #     - "6379:6379"
-    networks:  
-      # - "lnmp-env"
-      elk:
-        ipv4_address: 172.25.0.7
-  elasticsearch:
-    build:
-      context: elasticsearch/
-    container_name: elasticsearch
-    volumes:
-      - esdata:/usr/share/elasticsearch/data
-      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    environment:
-      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
-      ELASTIC_PASSWORD: "123456"
-    networks:
-      elk:
-        ipv4_address: 172.25.0.2
-    restart: always
-
-  logstash:
-    build:
-      context: logstash/
-    container_name: logstash
-    volumes:
-      - ./logstash/config:/usr/share/logstash/config:rw
-      - ./logstash/pipeline:/usr/share/logstash/pipeline:rw
-      - mysqllog:/xlogs/mysqllog:rw
-      - ./log/nginx/:/var/log/nginx/:rw
-    ports:
-      - "5000:5000"
-    environment:
-      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
-    user: "root"
-    networks:
-      elk:
-        ipv4_address: 172.25.0.3
-    depends_on:
-      - elasticsearch
-    restart: always
-
-  kibana:
-    build:
-      context: kibana/
-    container_name: kibana
-    volumes:
-      - ./kibana/config/:/usr/share/kibana/config:ro
-    ports:
-      - "5601:5601"
-    networks:
-      elk:
-        ipv4_address: 172.25.0.4
-    depends_on:
-      - elasticsearch
-    restart: always
-
-  metricbeat:
-    build:
-      context: metricbeat/
-    container_name: metricbeat
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /proc:/hostfs/proc:ro
-      - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
-      - /:/hostfs:ro
-      - ./metricbeat/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro
-      - ./metricbeat/modules.d:/usr/share/metricbeat/modules.d:ro
-      -  /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime:ro
-    user: "root"
-    network_mode: host
-    depends_on:
-      - elasticsearch
-      - kibana
-      - logstash
-    command: -system.hostfs=/hostfs -e
-    restart: always    
+    # networks:  
+    #   # - "lnmp-env"
+    #   web-php-net:
   
+# #设置内部网络        
+# networks:
+#   # lnmp-env:
+#   #   driver: bridge
+#   web-php-net:
+#     driver: bridge
+#     ipam:
+#       config:
+#        - subnet: 172.25.0.0/16
+#使用外部网络  docker network create --driver bridge --subnet 172.25.0.0/24 --gateway 172.25.0.1 web-php-net
 networks:
-  # lnmp-env:
-  #   driver: bridge
-  elk:
-    driver: bridge
-    ipam:
-      config:
-       - subnet: 172.25.0.0/16    
+  web-php-net:
+    external:
+      name: web-php-net
 
 #volumes:
     #db-data:
 volumes:
-  esdata:
-    driver: local
   mysqldata:
     driver: local
   mysqllog:
