@@ -205,9 +205,9 @@ RUN set -xe \
 			| awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
 	)" \
 	#编译出来的php各个可执行文件太大，用strip缩小，strip简单的说就是给文件脱掉外衣，具体就是从特定文件中剥掉一些符号信息和调试信息，使文件变小。使用strip工具需要安装binutils
-	&& strip /usr/local/bin/php && strip /usr/local/sbin/php-fpm && \
+	&& strip /usr/local/bin/php && strip /usr/local/sbin/php-fpm \
 	&& cd /usr/src/ && tar vxf redis-4.3.0.tgz && cd redis-4.3.0 && phpize && ./configure --with-php-config=`which php-config` && make -j4 && make install \
-	&& cd /usr/src/ && tar vxf swoole-4.3.1.tgz && cd swoole-4.3.1 && phpize && ./configure --with-php-config=`which php-config` && make -j4 && make install && cd / \
+	&& cd /usr/src/ && tar vxf swoole-4.3.1.tgz && cd swoole-4.3.1 && phpize && ./configure --with-php-config=`which php-config` && make -j4 && make install \
 	&& cd /usr/src/ && tar vxf xdebug-2.7.2.tgz && cd xdebug-2.7.2 && phpize && ./configure --with-php-config=`which php-config` && make -j4 && make install && cd / \
 	&& apk add --no-cache $runDeps \
 #	\
