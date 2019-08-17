@@ -40,24 +40,36 @@ services:
       - ./log/nginx/:/var/log/nginx/:rw
  
   php:
-    image: php-7.3.3
+    # image: php-7.3.3
     # image: ligang7138/php-7.3.3-fpm-zts-swoole
+    image: ligang7138/php-7.3.8-fpm-zts-swoole-rabbitmq-mongodb
     # build: php/7.3/alpine3.9/fpm/
     # build:
-      # context: php/7.3/alpine3.9/fpm
+    #   context: php/7.3/alpine3.9/fpm
     container_name: php-7.3
     #可以不用ports，就不占用宿主机的9000端口了，容器内部还是可以通过自己的9000通信的
     ports:
-      - "9000:9000"      
+      - "9000:9000"
+      - "9080:9080"
+      - "9081:9081"
+      - "9082:9082"
+      - "9083:9083"
+      - "9084:9084"
     expose:
       - "9000"
+      - "9080"
+      - "9081"
+      - "9082"
+      - "9083"
+      - "9084"
     volumes:
       - ./www/:/var/www/html/:rw
+      # - /usr/local/bin/php:/usr/local/bin/php
       - ./conf/php/php-7.3.3.ini:/usr/local/etc/php/php.ini:rw
       # - ./conf/php/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d/www.conf:rw
       - ./log/php-fpm/:/var/log/php-fpm/:rw
       - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime:ro
-      - /usr/local/bin/composer:/usr/local/bin/composer
+      # - /usr/local/bin/composer:/usr/local/bin/composer
     #external_links:
     depends_on:
       - mysql
