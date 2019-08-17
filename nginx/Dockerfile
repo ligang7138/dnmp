@@ -1,3 +1,3 @@
 FROM nginx:alpine
 
-LABEL maintainer="genius840215@163.com"
+LABEL maintainer="445123875@qq.com"
