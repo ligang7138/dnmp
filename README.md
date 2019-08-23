@@ -32,3 +32,27 @@ To preview them, add 2 lines to your hosts file (at `/etc/hosts` on Linux and `C
 127.0.0.1 www.site2.com
 ```
 Then you can visit from browser.
+
+docker-compose 来部署本地测试环境,频繁地执行docker-compose up/down 命令导致大量的创建container并且没有清空。
+
+解决方法：docker system prune -a  删除所有没有使用的images，container，volume
+
+停止docker 服务：#  systemctl stop docker.service
+
+
+修改 /lib/systemd/system/docker.service
+
+# vim /lib/systemd/system/docker.service
+
+在 ExecStart=/usr/bin/dockerd 后面添加 --storage-driver devicemapper --storage-opt dm.loopdatasize=1000G --storage-opt dm.loopmetadatasize=10G --storage-opt dm.fs=ext4 --storage-opt dm.basesize=100G 
+修改后为
+ExecStart=/usr/bin/dockerd --storage-driver devicemapper --storage-opt dm.loopdatasize=1000G --storage-opt dm.loopmetadatasize=10G --storage-opt dm.fs=ext4 --storage-opt dm.basesize=100G
+DOCKER最大空间为1000G，容器最大空间为100G
+
+
+执行  #systemctl daemon-reload  重新加载配置启动文件
+
+
+#  rm -rf   /var/lib/docker
+
+#  systemctl start docker.service
