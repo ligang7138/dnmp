@@ -13,13 +13,13 @@ services:
       - "80"
     depends_on:
       - redis
-      - php  
+      - php
    # deploy:
    #   replicas: 2
    #   update_config:
    #     parallelism: 2
    #     delay: 10s
-   #     order: start-first    
+   #     order: start-first
    # external_links:
    #   - php:fpm
     restart: always
@@ -28,7 +28,8 @@ services:
       web-php-net:
         ipv4_address: 172.25.0.5
     volumes:
-      - ./www/:/var/www/html/:rw
+      # - /var/www/html/:/var/www/html/:rw
+      - /var/www/html/:/var/www/html/:rw
       - ./conf/nginx/conf.d:/etc/nginx/conf.d/:rw
       - ./conf/nginx/nginx.conf:/etc/nginx/nginx.conf:rw
       # - ./conf/nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:rw
@@ -38,7 +39,7 @@ services:
       # - ./conf/nginx/nginx.conf:/etc/nginx/nginx.conf:rw
         #- ./conf/nginx/mime.types:/etc/nginx/mime.types:rw
       - ./log/nginx/:/var/log/nginx/:rw
- 
+
   php:
     # image: php-7.3.3
     # image: ligang7138/php-7.3.3-fpm-zts-swoole
@@ -63,7 +64,7 @@ services:
       - "9083"
       - "9084"
     volumes:
-      - ./www/:/var/www/html/:rw
+      - /var/www/html/:/var/www/html/:rw
       # - /usr/local/bin/php:/usr/local/bin/php
       - ./conf/php/php-7.3.3.ini:/usr/local/etc/php/php.ini:rw
       # - ./conf/php/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d/www.conf:rw
@@ -79,7 +80,7 @@ services:
       web-php-net:
         ipv4_address: 172.25.0.6
   mysql:
-    # image: mysql 
+    # image: mysql
     build:
       context: mariadb/
     container_name: mysql
@@ -90,7 +91,7 @@ services:
       - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime:ro
       # - ./log/mysql/:/var/log/mysql/:rw
       - mysqllog:/var/log/mysql
-      
+
     ports:
       - "3306:3306"
     networks:
@@ -98,7 +99,7 @@ services:
         ipv4_address: 172.25.0.7
     environment:
       MYSQL_ROOT_PASSWORD: root
-    restart: always  
+    restart: always
   #redis单机
   redis:
     image: redis:latest
@@ -108,12 +109,68 @@ services:
       - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime:ro
     restart: always
     ports:
-      - "6379:6379" 
+      - "6379:6379"
     networks:
       web-php-net:
         ipv4_address: 172.25.0.8
-  
-# #设置内部网络        
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    container_name: rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+    restart: always
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
+  consul1:
+    image: consul
+    container_name: node1
+    restart: always
+    command: agent -server -bootstrap-expect=3 -node=node1 -bind=0.0.0.0 -client=0.0.0.0 -datacenter=dc1
+    networks:
+      - web-php-net
+
+  consul2:
+    image: consul
+    container_name: node2
+    restart: always
+    command: agent -server -retry-join=node1 -node=node2 -bind=0.0.0.0 -client=0.0.0.0 -datacenter=dc1
+    depends_on:
+      - consul1
+    networks:
+      - web-php-net
+
+  consul3:
+    image: consul
+    container_name: node3
+    restart: always
+    command: agent -server -retry-join=node1 -node=node3 -bind=0.0.0.0 -client=0.0.0.0 -datacenter=dc1
+    depends_on:
+      - consul1
+    networks:
+      - web-php-net
+
+  consul4:
+    image: consul
+    container_name: node4
+    restart: always
+    command: agent -retry-join=node1 -node=ndoe4 -bind=0.0.0.0 -client=0.0.0.0 -datacenter=dc1 -ui
+    ports:
+      - 8500:8500
+    depends_on:
+      - consul2
+      - consul3
+    networks:
+      - web-php-net
+
+# #设置内部网络
 # networks:
 #   # lnmp-env:
 #   #   driver: bridge
@@ -136,4 +193,4 @@ volumes:
   mysqllog:
     driver: local
   redisdata:
-    driver: local    
+    driver: local
