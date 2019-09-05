@@ -11,6 +11,7 @@ services:
       - "443:443"
     expose:
       - "80"
+      # - "443"
     depends_on:
       - redis
       - php
@@ -24,9 +25,9 @@ services:
    #   - php:fpm
     restart: always
     networks:
-      # - "lnmp-env"
-      web-php-net:
-        ipv4_address: 172.25.0.5
+      - web-php-net
+      # web-php-net:
+        # ipv4_address: 172.25.0.5
     volumes:
       # - /var/www/html/:/var/www/html/:rw
       - /var/www/html/:/var/www/html/:rw
@@ -65,6 +66,7 @@ services:
       - "9084"
     volumes:
       - /var/www/html/:/var/www/html/:rw
+      - ./swoftcli:/usr/local/bin/swoftcli:rw
       # - /usr/local/bin/php:/usr/local/bin/php
       - ./conf/php/php-7.3.3.ini:/usr/local/etc/php/php.ini:rw
       # - ./conf/php/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d/www.conf:rw
@@ -74,11 +76,12 @@ services:
     #external_links:
     depends_on:
       - mysql
-      # - redis
+      - redis
     restart: always
     networks:
-      web-php-net:
-        ipv4_address: 172.25.0.6
+      - web-php-net
+      # web-php-net:
+        # ipv4_address: 172.25.0.6
   mysql:
     # image: mysql
     build:
@@ -95,8 +98,9 @@ services:
     ports:
       - "3306:3306"
     networks:
-      web-php-net:
-        ipv4_address: 172.25.0.7
+      - web-php-net
+      # web-php-net:
+        # ipv4_address: 172.25.0.7
     environment:
       MYSQL_ROOT_PASSWORD: root
     restart: always
@@ -111,8 +115,9 @@ services:
     ports:
       - "6379:6379"
     networks:
-      web-php-net:
-        ipv4_address: 172.25.0.8
+      - web-php-net
+      # web-php-net:
+        # ipv4_address: 172.25.0.8
   rabbitmq:
     image: rabbitmq:management-alpine
     container_name: rabbitmq
@@ -128,6 +133,8 @@ services:
       options:
         max-size: "200k"
         max-file: "10"
+    networks:
+      - web-php-net
 
   consul1:
     image: consul
